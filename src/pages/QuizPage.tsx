@@ -23,9 +23,11 @@ export default function QuizPage({ questions, reviewStates, logs, onDataChanged 
   }, [questions, logs]);
   const [index, setIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>();
+  const [answeredQuestion, setAnsweredQuestion] = useState<Question>();
   const [startedAt, setStartedAt] = useState(() => Date.now());
 
   const current = unansweredFirst[index];
+  const displayQuestion = selectedAnswer && answeredQuestion ? answeredQuestion : current;
 
   const handleSelect = (choice: string) => {
     if (!current || selectedAnswer) {
@@ -53,6 +55,7 @@ export default function QuizPage({ questions, reviewStates, logs, onDataChanged 
     addAnswerLog(log);
     const savedStates = [...nextReviewStates, updatedState];
     saveReviewStates(savedStates);
+    setAnsweredQuestion(current);
     setSelectedAnswer(choice);
     onDataChanged([...logs, log], savedStates);
   };
@@ -62,28 +65,29 @@ export default function QuizPage({ questions, reviewStates, logs, onDataChanged 
       return;
     }
     setSelectedAnswer(undefined);
+    setAnsweredQuestion(undefined);
     setStartedAt(Date.now());
-    setIndex((currentIndex) => (currentIndex + 1) % Math.max(unansweredFirst.length, 1));
+    setIndex((currentIndex) => Math.min(currentIndex, Math.max(unansweredFirst.length - 1, 0)));
   };
 
   if (questions.length === 0) {
     return <p className="empty-message">問題がありません。CSVを確認してください。</p>;
   }
 
-  if (!current) {
+  if (!displayQuestion) {
     return <p className="empty-message">出題できる問題がありません。</p>;
   }
 
   return (
     <div className="page-stack">
       <QuestionCard
-        question={current}
+        question={displayQuestion}
         questionNumber={index + 1}
         selectedAnswer={selectedAnswer}
         totalCount={unansweredFirst.length}
         onSelect={handleSelect}
       />
-      <ResultPanel question={current} selectedAnswer={selectedAnswer} />
+      <ResultPanel question={displayQuestion} selectedAnswer={selectedAnswer} />
       <button
         className="primary-button"
         disabled={!selectedAnswer}
