@@ -5,7 +5,9 @@ type QuestionCardProps = {
   question: Question;
   questionNumber: number;
   totalCount: number;
+  isChecked: boolean;
   selectedAnswer?: string;
+  onToggleCheck: (questionId: string) => void;
   onSelect: (choice: string) => void;
 };
 
@@ -13,7 +15,9 @@ export default function QuestionCard({
   question,
   questionNumber,
   totalCount,
+  isChecked,
   selectedAnswer,
+  onToggleCheck,
   onSelect
 }: QuestionCardProps) {
   const answered = Boolean(selectedAnswer);
@@ -26,6 +30,14 @@ export default function QuestionCard({
         </span>
         <span>難易度 {question.difficulty}</span>
       </div>
+      <button
+        aria-pressed={isChecked}
+        className={isChecked ? "check-button active" : "check-button"}
+        onClick={() => onToggleCheck(question.question_id)}
+        type="button"
+      >
+        {isChecked ? "要チェック済み" : "要チェック"}
+      </button>
       <div className="tag-row">
         {question.tags.map((tag) => (
           <span className="tag" key={tag}>

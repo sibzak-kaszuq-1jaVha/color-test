@@ -81,8 +81,15 @@ export const getUnansweredCount = (questions: Question[], logs: AnswerLog[]) => 
   return questions.filter((question) => !answeredIds.has(question.question_id)).length;
 };
 
-export const getDueReviewCount = (states: ReviewState[]) =>
-  states.filter((state) => state.wrong_count > 0 || isDueTodayOrPast(state.next_review_at)).length;
+export const getDueReviewCount = (states: ReviewState[], checkedQuestionIds: string[] = []) => {
+  const reviewIds = new Set(
+    states
+      .filter((state) => state.wrong_count > 0 || isDueTodayOrPast(state.next_review_at))
+      .map((state) => state.question_id)
+  );
+  checkedQuestionIds.forEach((questionId) => reviewIds.add(questionId));
+  return reviewIds.size;
+};
 
 export const getWeakTags = (
   questions: Question[],
@@ -97,10 +104,12 @@ export const getWeakTags = (
 export const getReviewQuestions = (
   questions: Question[],
   logs: AnswerLog[],
-  states: ReviewState[]
+  states: ReviewState[],
+  checkedQuestionIds: string[] = []
 ): Question[] => {
   const stateMap = new Map(states.map((state) => [state.question_id, state]));
   const weakTags = new Set(getWeakTags(questions, logs));
+  const checkedIds = new Set(checkedQuestionIds);
 
   return questions
     .filter((question) => {
@@ -109,16 +118,23 @@ export const getReviewQuestions = (
       return Boolean(
         state?.wrong_count ||
           isDueTodayOrPast(state?.next_review_at) ||
+          checkedIds.has(question.question_id) ||
           hasWeakTag
       );
     })
     .sort((a, b) => {
       const stateA = stateMap.get(a.question_id);
       const stateB = stateMap.get(b.question_id);
-      const dateA = stateA?.next_review_at ?? "9999-12-31";
-      const dateB = stateB?.next_review_at ?? "9999-12-31";
+      const checkedA = checkedIds.has(a.question_id) ? 1 : 0;
+      const checkedB = checkedIds.has(b.question_id) ? 1 : 0;
+      const dateA = checkedA ? "0000-00-00" : stateA?.next_review_at ?? "9999-12-31";
+      const dateB = checkedB ? "0000-00-00" : stateB?.next_review_at ?? "9999-12-31";
       if (dateA !== dateB) {
         return dateA.localeCompare(dateB);
+      }
+      const checkedDiff = checkedB - checkedA;
+      if (checkedDiff !== 0) {
+        return checkedDiff;
       }
       const wrongDiff = (stateB?.wrong_count ?? 0) - (stateA?.wrong_count ?? 0);
       if (wrongDiff !== 0) {

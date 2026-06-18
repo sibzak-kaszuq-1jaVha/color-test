@@ -27,4 +27,9 @@ export type ReviewState = {
   next_review_at?: string;
 };
 
+export type CheckState = {
+  question_id: string;
+  checked_at: string;
+};
+
 export type AppView = "home" | "quiz" | "review" | "stats" | "settings";

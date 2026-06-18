@@ -1,5 +1,5 @@
 import StatCard from "../components/StatCard";
-import type { AnswerLog, Question, ReviewState } from "../types";
+import type { AnswerLog, CheckState, Question, ReviewState } from "../types";
 import {
   getDifficultyStats,
   getFrequentMistakes,
@@ -11,13 +11,16 @@ type StatsPageProps = {
   questions: Question[];
   logs: AnswerLog[];
   reviewStates: ReviewState[];
+  checkStates: CheckState[];
 };
 
-export default function StatsPage({ questions, logs, reviewStates }: StatsPageProps) {
+export default function StatsPage({ questions, logs, reviewStates, checkStates }: StatsPageProps) {
   const overall = getOverallStats(logs);
   const tagStats = getTagStats(questions, logs);
   const difficultyStats = getDifficultyStats(questions, logs);
   const mistakes = getFrequentMistakes(questions, reviewStates);
+  const checkedIds = new Set(checkStates.map((state) => state.question_id));
+  const checkedQuestions = questions.filter((question) => checkedIds.has(question.question_id));
 
   return (
     <div className="page-stack">
@@ -70,6 +73,23 @@ export default function StatsPage({ questions, logs, reviewStates }: StatsPagePr
                 <p>{question.tags.join(" / ")}</p>
               </div>
               <span>{question.wrong_count}回</span>
+            </article>
+          ))
+        )}
+      </section>
+
+      <section className="list-panel">
+        <h2>要チェック</h2>
+        {checkedQuestions.length === 0 ? (
+          <p>要チェックの問題はありません。</p>
+        ) : (
+          checkedQuestions.map((question) => (
+            <article className="mistake-item" key={question.question_id}>
+              <div>
+                <strong>{question.prompt}</strong>
+                <p>{question.tags.join(" / ")}</p>
+              </div>
+              <span>復習</span>
             </article>
           ))
         )}

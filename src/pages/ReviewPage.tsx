@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import QuestionCard from "../components/QuestionCard";
 import ResultPanel from "../components/ResultPanel";
-import type { AnswerLog, Question, ReviewState } from "../types";
+import type { AnswerLog, CheckState, Question, ReviewState } from "../types";
 import { updateReviewState } from "../utils/review";
 import { addAnswerLog, saveReviewStates } from "../utils/storage";
 import { getReviewQuestions } from "../utils/stats";
@@ -10,23 +10,40 @@ type ReviewPageProps = {
   questions: Question[];
   logs: AnswerLog[];
   reviewStates: ReviewState[];
+  checkStates: CheckState[];
   onDataChanged: (logs: AnswerLog[], reviewStates: ReviewState[]) => void;
+  onCheckStatesChanged: (checkStates: CheckState[]) => void;
 };
 
 export default function ReviewPage({
   questions,
   logs,
   reviewStates,
-  onDataChanged
+  checkStates,
+  onDataChanged,
+  onCheckStatesChanged
 }: ReviewPageProps) {
+  const checkedQuestionIds = useMemo(
+    () => new Set(checkStates.map((state) => state.question_id)),
+    [checkStates]
+  );
   const reviewQuestions = useMemo(
-    () => getReviewQuestions(questions, logs, reviewStates),
-    [questions, logs, reviewStates]
+    () => getReviewQuestions(questions, logs, reviewStates, [...checkedQuestionIds]),
+    [questions, logs, reviewStates, checkedQuestionIds]
   );
   const [index, setIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>();
   const [startedAt, setStartedAt] = useState(() => Date.now());
-  const current = reviewQuestions[index];
+  const safeIndex = Math.min(index, Math.max(reviewQuestions.length - 1, 0));
+  const current = reviewQuestions[safeIndex];
+
+  const handleToggleCheck = (questionId: string) => {
+    const isChecked = checkedQuestionIds.has(questionId);
+    const nextCheckStates = isChecked
+      ? checkStates.filter((state) => state.question_id !== questionId)
+      : [...checkStates, { question_id: questionId, checked_at: new Date().toISOString() }];
+    onCheckStatesChanged(nextCheckStates);
+  };
 
   const handleSelect = (choice: string) => {
     if (!current || selectedAnswer) {
@@ -80,9 +97,11 @@ export default function ReviewPage({
     <div className="page-stack">
       <QuestionCard
         question={current}
-        questionNumber={index + 1}
+        questionNumber={safeIndex + 1}
+        isChecked={checkedQuestionIds.has(current.question_id)}
         selectedAnswer={selectedAnswer}
         totalCount={reviewQuestions.length}
+        onToggleCheck={handleToggleCheck}
         onSelect={handleSelect}
       />
       <ResultPanel question={current} selectedAnswer={selectedAnswer} />

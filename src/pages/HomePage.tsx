@@ -1,18 +1,28 @@
 import StatCard from "../components/StatCard";
-import type { AppView, AnswerLog, Question, ReviewState } from "../types";
+import type { AppView, AnswerLog, CheckState, Question, ReviewState } from "../types";
 import { getDueReviewCount, getOverallStats, getUnansweredCount } from "../utils/stats";
 
 type HomePageProps = {
   questions: Question[];
   logs: AnswerLog[];
   reviewStates: ReviewState[];
+  checkStates: CheckState[];
   onNavigate: (view: AppView) => void;
 };
 
-export default function HomePage({ questions, logs, reviewStates, onNavigate }: HomePageProps) {
+export default function HomePage({
+  questions,
+  logs,
+  reviewStates,
+  checkStates,
+  onNavigate
+}: HomePageProps) {
   const overall = getOverallStats(logs);
   const unanswered = getUnansweredCount(questions, logs);
-  const dueReview = getDueReviewCount(reviewStates);
+  const dueReview = getDueReviewCount(
+    reviewStates,
+    checkStates.map((state) => state.question_id)
+  );
 
   return (
     <div className="page-stack">

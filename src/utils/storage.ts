@@ -1,13 +1,15 @@
-import type { AnswerLog, ReviewState } from "../types";
+import type { AnswerLog, CheckState, ReviewState } from "../types";
 
 const ANSWER_LOGS_KEY = "color-test-answer-logs";
 const REVIEW_STATES_KEY = "color-test-review-states";
+const CHECK_STATES_KEY = "color-test-check-states";
 
 type ExportData = {
-  version: 1;
+  version: 1 | 2;
   exported_at: string;
   answer_logs: AnswerLog[];
   review_states: ReviewState[];
+  check_states?: CheckState[];
 };
 
 const readJson = <T>(key: string, fallback: T): T => {
@@ -36,12 +38,17 @@ export const getReviewStates = (): ReviewState[] =>
 
 export const saveReviewStates = (states: ReviewState[]) => writeJson(REVIEW_STATES_KEY, states);
 
+export const getCheckStates = (): CheckState[] => readJson<CheckState[]>(CHECK_STATES_KEY, []);
+
+export const saveCheckStates = (states: CheckState[]) => writeJson(CHECK_STATES_KEY, states);
+
 export const exportLearningData = (): string => {
   const data: ExportData = {
-    version: 1,
+    version: 2,
     exported_at: new Date().toISOString(),
     answer_logs: getAnswerLogs(),
-    review_states: getReviewStates()
+    review_states: getReviewStates(),
+    check_states: getCheckStates()
   };
   return JSON.stringify(data, null, 2);
 };
@@ -53,9 +60,11 @@ export const importLearningData = (jsonText: string) => {
   }
   saveAnswerLogs(parsed.answer_logs);
   saveReviewStates(parsed.review_states);
+  saveCheckStates(Array.isArray(parsed.check_states) ? parsed.check_states : []);
 };
 
 export const resetLearningData = () => {
   localStorage.removeItem(ANSWER_LOGS_KEY);
   localStorage.removeItem(REVIEW_STATES_KEY);
+  localStorage.removeItem(CHECK_STATES_KEY);
 };

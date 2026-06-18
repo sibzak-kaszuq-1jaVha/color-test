@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Layout from "./components/Layout";
-import type { AnswerLog, AppView, Question, ReviewState } from "./types";
+import type { AnswerLog, AppView, CheckState, Question, ReviewState } from "./types";
 import { loadQuestions } from "./utils/csv";
-import { getAnswerLogs, getReviewStates } from "./utils/storage";
+import { getAnswerLogs, getCheckStates, getReviewStates, saveCheckStates } from "./utils/storage";
 import HomePage from "./pages/HomePage";
 import QuizPage from "./pages/QuizPage";
 import ReviewPage from "./pages/ReviewPage";
@@ -14,12 +14,14 @@ export default function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [logs, setLogs] = useState<AnswerLog[]>(() => getAnswerLogs());
   const [reviewStates, setReviewStates] = useState<ReviewState[]>(() => getReviewStates());
+  const [checkStates, setCheckStates] = useState<CheckState[]>(() => getCheckStates());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const refreshLocalData = useCallback(() => {
     setLogs(getAnswerLogs());
     setReviewStates(getReviewStates());
+    setCheckStates(getCheckStates());
   }, []);
 
   const reloadCsv = useCallback(async (cacheBust = false) => {
@@ -42,6 +44,11 @@ export default function App() {
   const handleDataChanged = (nextLogs: AnswerLog[], nextReviewStates: ReviewState[]) => {
     setLogs(nextLogs);
     setReviewStates(nextReviewStates);
+  };
+
+  const handleCheckStatesChanged = (nextCheckStates: CheckState[]) => {
+    saveCheckStates(nextCheckStates);
+    setCheckStates(nextCheckStates);
   };
 
   const renderPage = () => {
@@ -68,7 +75,9 @@ export default function App() {
             logs={logs}
             questions={questions}
             reviewStates={reviewStates}
+            checkStates={checkStates}
             onDataChanged={handleDataChanged}
+            onCheckStatesChanged={handleCheckStatesChanged}
           />
         );
       case "review":
@@ -77,11 +86,20 @@ export default function App() {
             logs={logs}
             questions={questions}
             reviewStates={reviewStates}
+            checkStates={checkStates}
             onDataChanged={handleDataChanged}
+            onCheckStatesChanged={handleCheckStatesChanged}
           />
         );
       case "stats":
-        return <StatsPage logs={logs} questions={questions} reviewStates={reviewStates} />;
+        return (
+          <StatsPage
+            checkStates={checkStates}
+            logs={logs}
+            questions={questions}
+            reviewStates={reviewStates}
+          />
+        );
       case "settings":
         return (
           <SettingsPage
@@ -98,6 +116,7 @@ export default function App() {
             logs={logs}
             questions={questions}
             reviewStates={reviewStates}
+            checkStates={checkStates}
             onNavigate={setView}
           />
         );

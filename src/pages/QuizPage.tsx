@@ -1,18 +1,27 @@
 import { useMemo, useState } from "react";
 import QuestionCard from "../components/QuestionCard";
 import ResultPanel from "../components/ResultPanel";
-import type { AnswerLog, Question, ReviewState } from "../types";
+import type { AnswerLog, CheckState, Question, ReviewState } from "../types";
 import { updateReviewState } from "../utils/review";
 import { addAnswerLog, saveReviewStates } from "../utils/storage";
 
 type QuizPageProps = {
   questions: Question[];
   reviewStates: ReviewState[];
+  checkStates: CheckState[];
   onDataChanged: (logs: AnswerLog[], reviewStates: ReviewState[]) => void;
+  onCheckStatesChanged: (checkStates: CheckState[]) => void;
   logs: AnswerLog[];
 };
 
-export default function QuizPage({ questions, reviewStates, logs, onDataChanged }: QuizPageProps) {
+export default function QuizPage({
+  questions,
+  reviewStates,
+  checkStates,
+  logs,
+  onDataChanged,
+  onCheckStatesChanged
+}: QuizPageProps) {
   const unansweredFirst = useMemo(() => {
     const answeredIds = new Set(logs.map((log) => log.question_id));
     return [...questions].sort((a, b) => {
@@ -28,6 +37,18 @@ export default function QuizPage({ questions, reviewStates, logs, onDataChanged 
 
   const current = unansweredFirst[index];
   const displayQuestion = selectedAnswer && answeredQuestion ? answeredQuestion : current;
+  const checkedQuestionIds = useMemo(
+    () => new Set(checkStates.map((state) => state.question_id)),
+    [checkStates]
+  );
+
+  const handleToggleCheck = (questionId: string) => {
+    const isChecked = checkedQuestionIds.has(questionId);
+    const nextCheckStates = isChecked
+      ? checkStates.filter((state) => state.question_id !== questionId)
+      : [...checkStates, { question_id: questionId, checked_at: new Date().toISOString() }];
+    onCheckStatesChanged(nextCheckStates);
+  };
 
   const handleSelect = (choice: string) => {
     if (!current || selectedAnswer) {
@@ -83,8 +104,10 @@ export default function QuizPage({ questions, reviewStates, logs, onDataChanged 
       <QuestionCard
         question={displayQuestion}
         questionNumber={index + 1}
+        isChecked={checkedQuestionIds.has(displayQuestion.question_id)}
         selectedAnswer={selectedAnswer}
         totalCount={unansweredFirst.length}
+        onToggleCheck={handleToggleCheck}
         onSelect={handleSelect}
       />
       <ResultPanel question={displayQuestion} selectedAnswer={selectedAnswer} />
