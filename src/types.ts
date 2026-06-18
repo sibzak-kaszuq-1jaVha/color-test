@@ -1,3 +1,13 @@
+export type ChoiceColor = {
+  key: "a" | "b" | "c" | "d";
+  label: string;
+  colorName: string;
+  hex: string;
+  pccs: string;
+  munsell: string;
+  source: string;
+};
+
 export type Question = {
   question_id: string;
   mode: string;
@@ -8,6 +18,9 @@ export type Question = {
   wrong_choice_notes: string;
   tags: string[];
   difficulty: 1 | 2 | 3;
+  choiceColors: ChoiceColor[];
+  showColorAfterAnswer: boolean;
+  colorDataStatus: string;
 };
 
 export type AnswerLog = {

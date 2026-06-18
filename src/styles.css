@@ -290,6 +290,55 @@ button:disabled {
   color: var(--muted);
 }
 
+.color-preview-section {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(42, 40, 37, 0.06);
+}
+
+.color-preview-section h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.color-preview-list {
+  display: grid;
+  gap: 8px;
+}
+
+.color-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+}
+
+.color-preview-text {
+  min-width: 0;
+}
+
+.color-preview-name {
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.color-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .list-panel h2 {
   margin-bottom: 12px;
   font-size: 20px;

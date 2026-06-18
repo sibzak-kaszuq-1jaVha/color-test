@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import type { Question } from "../types";
+import type { ChoiceColor, Question } from "../types";
 
 type QuestionRow = {
   question_id?: string;
@@ -14,6 +14,28 @@ type QuestionRow = {
   wrong_choice_notes?: string;
   tags?: string;
   difficulty?: string;
+  choice_a_color_name?: string;
+  choice_a_color_hex?: string;
+  choice_a_pccs?: string;
+  choice_a_munsell?: string;
+  choice_a_color_source?: string;
+  choice_b_color_name?: string;
+  choice_b_color_hex?: string;
+  choice_b_pccs?: string;
+  choice_b_munsell?: string;
+  choice_b_color_source?: string;
+  choice_c_color_name?: string;
+  choice_c_color_hex?: string;
+  choice_c_pccs?: string;
+  choice_c_munsell?: string;
+  choice_c_color_source?: string;
+  choice_d_color_name?: string;
+  choice_d_color_hex?: string;
+  choice_d_pccs?: string;
+  choice_d_munsell?: string;
+  choice_d_color_source?: string;
+  show_color_after_answer?: string;
+  color_data_status?: string;
 };
 
 const CSV_PATH = "/data/questions.csv";
@@ -26,6 +48,28 @@ const normalizeDifficulty = (value: string | undefined): 1 | 2 | 3 => {
     return parsed;
   }
   return 1;
+};
+
+const normalizeBoolean = (value: string | undefined) => {
+  return (value ?? "").trim().toLowerCase() === "true";
+};
+
+const trimValue = (value: string | undefined) => (value ?? "").trim();
+
+const getChoiceColor = (
+  row: QuestionRow,
+  key: ChoiceColor["key"],
+  label: string
+): ChoiceColor => {
+  return {
+    key,
+    label,
+    colorName: trimValue(row[`choice_${key}_color_name`]),
+    hex: trimValue(row[`choice_${key}_color_hex`]),
+    pccs: trimValue(row[`choice_${key}_pccs`]),
+    munsell: trimValue(row[`choice_${key}_munsell`]),
+    source: trimValue(row[`choice_${key}_color_source`])
+  };
 };
 
 const rowToQuestion = (row: QuestionRow, index: number): Question => {
@@ -49,7 +93,15 @@ const rowToQuestion = (row: QuestionRow, index: number): Question => {
       .split("|")
       .map((tag) => tag.trim())
       .filter(Boolean),
-    difficulty: normalizeDifficulty(row.difficulty)
+    difficulty: normalizeDifficulty(row.difficulty),
+    choiceColors: [
+      getChoiceColor(row, "a", choices[0]),
+      getChoiceColor(row, "b", choices[1]),
+      getChoiceColor(row, "c", choices[2]),
+      getChoiceColor(row, "d", choices[3])
+    ],
+    showColorAfterAnswer: normalizeBoolean(row.show_color_after_answer),
+    colorDataStatus: trimValue(row.color_data_status)
   };
 };
 
