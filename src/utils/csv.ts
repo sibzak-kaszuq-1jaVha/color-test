@@ -38,7 +38,7 @@ type QuestionRow = {
   color_data_status?: string;
 };
 
-const CSV_PATH = "/data/questions.csv";
+const CSV_PATH = `${import.meta.env.BASE_URL}data/questions.csv`;
 
 const stripBom = (value: string) => value.replace(/^\uFEFF/, "");
 
@@ -106,8 +106,18 @@ const rowToQuestion = (row: QuestionRow, index: number): Question => {
 };
 
 export async function loadQuestions(cacheBust = false): Promise<Question[]> {
-  const url = cacheBust ? `${CSV_PATH}?t=${Date.now()}` : CSV_PATH;
-  const response = await fetch(url, { cache: cacheBust ? "reload" : "default" });
+  let response: Response;
+
+  if (cacheBust) {
+    try {
+      const freshResponse = await fetch(`${CSV_PATH}?t=${Date.now()}`, { cache: "reload" });
+      response = freshResponse.ok ? freshResponse : await fetch(CSV_PATH);
+    } catch {
+      response = await fetch(CSV_PATH);
+    }
+  } else {
+    response = await fetch(CSV_PATH);
+  }
 
   if (!response.ok) {
     throw new Error("CSVファイルを読み込めませんでした。public/data/questions.csv を確認してください。");
