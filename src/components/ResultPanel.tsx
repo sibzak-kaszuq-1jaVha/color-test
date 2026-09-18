@@ -38,7 +38,7 @@ export default function ResultPanel({ question, selectedAnswer }: ResultPanelPro
                 />
                 <div className="color-preview-text">
                   <div className="color-preview-name">
-                    {choice.key.toUpperCase()}. {choice.label}
+                    {choice.label}
                   </div>
                   <div className="color-meta">
                     {choice.hex}

@@ -5,6 +5,7 @@ import type { AnswerLog, CheckState, Question, ReviewState } from "../types";
 import { updateReviewState } from "../utils/review";
 import { addAnswerLog, saveReviewStates } from "../utils/storage";
 import { getReviewQuestions } from "../utils/stats";
+import { shuffleQuestionChoices } from "../utils/quiz";
 
 type ReviewPageProps = {
   questions: Question[];
@@ -27,15 +28,14 @@ export default function ReviewPage({
     () => new Set(checkStates.map((state) => state.question_id)),
     [checkStates]
   );
-  const reviewQuestions = useMemo(
-    () => getReviewQuestions(questions, logs, reviewStates, [...checkedQuestionIds]),
-    [questions, logs, reviewStates, checkedQuestionIds]
+  const [reviewQuestions, setReviewQuestions] = useState(
+    () => getReviewQuestions(questions, logs, reviewStates, [...checkedQuestionIds])
+      .map((question) => shuffleQuestionChoices(question))
   );
   const [index, setIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>();
   const [startedAt, setStartedAt] = useState(() => Date.now());
-  const safeIndex = Math.min(index, Math.max(reviewQuestions.length - 1, 0));
-  const current = reviewQuestions[safeIndex];
+  const current = reviewQuestions[index];
 
   const handleToggleCheck = (questionId: string) => {
     const isChecked = checkedQuestionIds.has(questionId);
@@ -81,7 +81,7 @@ export default function ReviewPage({
     }
     setSelectedAnswer(undefined);
     setStartedAt(Date.now());
-    setIndex((currentIndex) => (currentIndex + 1) % Math.max(reviewQuestions.length, 1));
+    setIndex((currentIndex) => currentIndex + 1);
   };
 
   if (reviewQuestions.length === 0) {
@@ -93,11 +93,28 @@ export default function ReviewPage({
     );
   }
 
+  if (!current) {
+    return (
+      <div className="empty-panel">
+        <h2>今回の復習が完了しました</h2>
+        <p>{reviewQuestions.length}問に回答しました。</p>
+        <button className="primary-button" type="button" onClick={() => {
+          setReviewQuestions(getReviewQuestions(questions, logs, reviewStates, [...checkedQuestionIds])
+            .map((question) => shuffleQuestionChoices(question)));
+          setIndex(0);
+          setStartedAt(Date.now());
+        }}>
+          復習対象を更新する
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="page-stack">
       <QuestionCard
         question={current}
-        questionNumber={safeIndex + 1}
+        questionNumber={index + 1}
         isChecked={checkedQuestionIds.has(current.question_id)}
         selectedAnswer={selectedAnswer}
         totalCount={reviewQuestions.length}
@@ -111,7 +128,7 @@ export default function ReviewPage({
         onClick={handleNext}
         type="button"
       >
-        次の復習へ
+        {index + 1 === reviewQuestions.length ? "復習を完了する" : "次の復習へ"}
       </button>
     </div>
   );

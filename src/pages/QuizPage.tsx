@@ -4,6 +4,7 @@ import ResultPanel from "../components/ResultPanel";
 import type { AnswerLog, CheckState, Question, ReviewState } from "../types";
 import { updateReviewState } from "../utils/review";
 import { addAnswerLog, saveReviewStates } from "../utils/storage";
+import { createQuizSession } from "../utils/quiz";
 
 type QuizPageProps = {
   questions: Question[];
@@ -22,21 +23,12 @@ export default function QuizPage({
   onDataChanged,
   onCheckStatesChanged
 }: QuizPageProps) {
-  const unansweredFirst = useMemo(() => {
-    const answeredIds = new Set(logs.map((log) => log.question_id));
-    return [...questions].sort((a, b) => {
-      const aAnswered = answeredIds.has(a.question_id) ? 1 : 0;
-      const bAnswered = answeredIds.has(b.question_id) ? 1 : 0;
-      return aAnswered - bAnswered;
-    });
-  }, [questions, logs]);
+  const [sessionQuestions, setSessionQuestions] = useState(() => createQuizSession(questions, logs));
   const [index, setIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>();
-  const [answeredQuestion, setAnsweredQuestion] = useState<Question>();
   const [startedAt, setStartedAt] = useState(() => Date.now());
 
-  const current = unansweredFirst[index];
-  const displayQuestion = selectedAnswer && answeredQuestion ? answeredQuestion : current;
+  const current = sessionQuestions[index];
   const checkedQuestionIds = useMemo(
     () => new Set(checkStates.map((state) => state.question_id)),
     [checkStates]
@@ -76,7 +68,6 @@ export default function QuizPage({
     addAnswerLog(log);
     const savedStates = [...nextReviewStates, updatedState];
     saveReviewStates(savedStates);
-    setAnsweredQuestion(current);
     setSelectedAnswer(choice);
     onDataChanged([...logs, log], savedStates);
   };
@@ -86,38 +77,49 @@ export default function QuizPage({
       return;
     }
     setSelectedAnswer(undefined);
-    setAnsweredQuestion(undefined);
     setStartedAt(Date.now());
-    setIndex((currentIndex) => Math.min(currentIndex, Math.max(unansweredFirst.length - 1, 0)));
+    setIndex((currentIndex) => currentIndex + 1);
   };
 
   if (questions.length === 0) {
     return <p className="empty-message">問題がありません。CSVを確認してください。</p>;
   }
 
-  if (!displayQuestion) {
-    return <p className="empty-message">出題できる問題がありません。</p>;
+  if (!current) {
+    return (
+      <div className="empty-panel">
+        <h2>今回の学習が完了しました</h2>
+        <p>{sessionQuestions.length}問に回答しました。</p>
+        <button className="primary-button" type="button" onClick={() => {
+          setSessionQuestions(createQuizSession(questions, logs));
+          setIndex(0);
+          setStartedAt(Date.now());
+        }}>
+          もう一度学習する
+        </button>
+      </div>
+    );
   }
 
   return (
     <div className="page-stack">
       <QuestionCard
-        question={displayQuestion}
+        question={current}
         questionNumber={index + 1}
-        isChecked={checkedQuestionIds.has(displayQuestion.question_id)}
+        isChecked={checkedQuestionIds.has(current.question_id)}
         selectedAnswer={selectedAnswer}
-        totalCount={unansweredFirst.length}
+        totalCount={sessionQuestions.length}
         onToggleCheck={handleToggleCheck}
         onSelect={handleSelect}
       />
-      <ResultPanel question={displayQuestion} selectedAnswer={selectedAnswer} />
+      <ResultPanel question={current} selectedAnswer={selectedAnswer} />
       <button
         className="primary-button"
         disabled={!selectedAnswer}
         onClick={handleNext}
         type="button"
       >
-        次の問題へ
+        {index + 1 === sessionQuestions.length ? "学習を完了する" : "次の問題へ"}
       </button>
     </div>
   );
