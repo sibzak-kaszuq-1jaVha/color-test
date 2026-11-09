@@ -20,7 +20,7 @@ export default function Layout({ currentView, onNavigate, children }: LayoutProp
       <header className="app-header">
         <div>
           <p className="eyebrow">色彩検定1級2次</p>
-          <h1>慣用色名トレーニング</h1>
+          <h1>慣用色名・トーントレーニング</h1>
         </div>
       </header>
       <main className="app-main">{children}</main>

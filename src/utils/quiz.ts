@@ -1,5 +1,8 @@
 import type { AnswerLog, Question } from "../types";
 
+export const TONE_MODE = "トーン名から色を選ぶ";
+export const WEAK_TOPIC_TAG = "苦手対策";
+
 export function shuffleQuestionChoices(
   question: Question,
   random: () => number = Math.random

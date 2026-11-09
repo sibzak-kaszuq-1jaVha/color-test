@@ -1,4 +1,5 @@
 import type { Question } from "../types";
+import { TONE_MODE } from "../utils/quiz";
 import ChoiceButton from "./ChoiceButton";
 
 type QuestionCardProps = {
@@ -48,9 +49,13 @@ export default function QuestionCard({
       <p className="mode-label">{question.mode}</p>
       <h2>{question.prompt}</h2>
       <div className="choice-list">
-        {question.choices.map((choice) => (
+        {question.choices.map((choice, index) => (
           <ChoiceButton
             choice={choice}
+            swatch={question.mode === TONE_MODE ? {
+              label: `色票 ${index + 1}`,
+              hex: question.choiceColors[index].hex
+            } : undefined}
             disabled={answered}
             isCorrect={choice === question.answer}
             isSelected={choice === selectedAnswer}

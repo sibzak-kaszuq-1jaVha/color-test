@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import Papa from "papaparse";
-import { createQuizSession, shuffleQuestionChoices } from "../src/utils/quiz.ts";
+import { createQuizSession, shuffleQuestionChoices, TONE_MODE, WEAK_TOPIC_TAG } from "../src/utils/quiz.ts";
 
 const question = {
   question_id: "test-1",
@@ -65,7 +65,7 @@ const rows = parsed.data;
 
 test("全問題のID・4択・正解・色見本が有効", () => {
   assert.deepEqual(parsed.errors, []);
-  assert.equal(rows.length, 153);
+  assert.equal(rows.length, 190);
   assert.equal(new Set(rows.map((row) => row.question_id)).size, rows.length);
   for (const row of rows) {
     const choices = ["a", "b", "c", "d"].map((key) => row[`choice_${key}`]);
@@ -95,7 +95,94 @@ test("同じ顔料・染料が由来の設問は成分だけで正解を決め�
   assert.match(prompts.kanyou_002, /洋紅/);
   assert.match(prompts.kanyou_new_083, /洋紅/);
   assert.match(prompts.kanyou_new_084, /名称をそのまま含み/);
-  assert.match(prompts.kanyou_new_094, /プロイセン/);
+  assert.match(prompts.kanyou_new_094, /王国名/);
   assert.match(prompts.kanyou_new_095, /鉄を意味する英語/);
-  assert.match(prompts.kanyou_new_097, /クロム酸鉛/);
+  assert.match(prompts.kanyou_new_097, /PbCrO₄/);
+});
+
+const answerAliases = {
+  "菫（すみれ）色": ["菫", "董色"],
+  "ききょう色": ["桔梗"],
+  "かきつばた色": ["杜若", "燕子花"],
+  "あやめ色": ["菖蒲", "文目", "綾目"],
+  "しょうぶ色": ["菖蒲", "ハナショウブ"],
+  "勿忘草（わすれなぐさ）色": ["勿忘草", "忘れな草"],
+  "露草色": ["露草", "つゆくさ"],
+  "藤色": ["ふじ"],
+  "藤紫": ["ふじむらさき"],
+  "藤納戸": ["ふじなんど"],
+  "ウィスタリア": ["ウイスタリア", "ウィステリア", "wisteria", "藤の花", "フジの花"],
+  "ライラック": ["リラの花", "リラとも", "lilac"],
+  "ラベンダー": ["lavender"],
+  "パンジー": ["pansy", "三色菫", "さんしきすみれ"],
+  "バイオレット": ["ヴァイオレット", "violet", "スミレの花", "菫の花"],
+  "オーキッド": ["orchid", "蘭の花", "ランの花"],
+  "つつじ色": ["躑躅"],
+  "ばら色": ["薔薇", "バラ"],
+  "桜色": ["さくら", "櫻"],
+  "紅梅（こうばい）色": ["紅梅", "こうばい"],
+  "桃色": ["もも", "モモ"],
+  "山吹色": ["やまぶき"],
+  "うこん色": ["鬱金", "ターメリック"],
+  "柿色": ["かき", "カキ"],
+  "杏色": ["あんず", "アンズ"],
+  "栗色": ["くり", "クリ"],
+  "紅色": ["べにいろ", "くれないいろ", "紅花", "べにばな"],
+  "勝色（かちいろ）": ["勝ち色", "勝つ"],
+  "海老茶": ["えびちゃ", "蝦茶", "伊勢海老", "イセエビ"],
+  "萌黄（もえぎ）": ["萌葱", "萌え出"],
+  "たいしゃ": ["代赭"],
+  "るり色": ["瑠璃"],
+  "錆色": ["鉄さび", "鉄錆"],
+  "スカーレット": ["scarlet", "スカーレト", "緋色", "ひいろ"],
+  "カーマイン": ["carmine", "カーミン", "カルミン"],
+  "コチニールレッド": ["cochineal", "コチニール", "コチニル"],
+  "コチニールレッド → カーマイン": ["コチニール", "カーマイン", "cochineal", "carmine"],
+  "バーミリオン → スカーレット": ["バーミリオン", "スカーレット", "緋色"],
+  "バーガンディー": ["バーガンディ", "burgundy", "ブルゴーニュ"],
+  "プルシャンブルー": ["プルシアンブルー", "prussian blue", "プロイセン"],
+  "ネープルスイエロー": ["ネープルズイエロー", "naples yellow", "ナポリ"],
+  "バーントシェンナ": ["バーントシエンナ", "burnt sienna", "シエナ"],
+  "ローシェンナ": ["ローシエンナ", "raw sienna", "シエナ"]
+};
+
+const normalizeForPromptCheck = (text) => text.normalize("NFKC").toLowerCase()
+  .replace(/[ァ-ヶ]/g, (kana) => String.fromCharCode(kana.charCodeAt(0) - 0x60))
+  .replace(/[^\p{L}\p{N}]/gu, "");
+
+test("設問に正解や確認対象の別表記が含まれない", () => {
+  for (const { question_id, prompt, answer } of rows) {
+    const normalizedPrompt = normalizeForPromptCheck(prompt);
+    const parenthetical = [...answer.matchAll(/[（(]([^）)]+)[）)]/g)].map((match) => match[1]);
+    const bareAnswer = answer.replace(/[（(][^）)]+[）)]/g, "");
+    const spellings = [answer, bareAnswer, bareAnswer.replace(/色$/, ""), ...parenthetical,
+      ...(answerAliases[answer] ?? [])];
+    for (const spelling of spellings.map(normalizeForPromptCheck)) {
+      if (spelling.length > 1) {
+        assert.ok(!normalizedPrompt.includes(spelling), `${question_id}: ${spelling}`);
+      }
+    }
+  }
+});
+
+test("苦手対策は3分野、トーン問題は12種類すべてに同一色相の色票を4枚持つ", () => {
+  const drills = rows.filter((row) => row.tags.split("|").includes(WEAK_TOPIC_TAG));
+  assert.equal(drills.length, 25);
+  assert.deepEqual(new Set(drills.flatMap((row) => row.tags.split("|")).filter((tag) => tag !== WEAK_TOPIC_TAG)),
+    new Set(["青・紫系の花", "顔料の原料", "赤系の由来"]));
+  const tones = rows.filter((row) => row.mode === TONE_MODE);
+  assert.deepEqual(new Set(tones.map((row) => row.answer.replace(/\d+$/, ""))),
+    new Set(["v", "s", "b", "dp", "lt", "sf", "d", "dk", "p", "ltg", "g", "dkg"]));
+  for (const row of tones) {
+    const hue = row.answer.match(/\d+$/)[0];
+    const swatches = new Set();
+    assert.equal(row.show_color_after_answer, "TRUE", row.question_id);
+    for (const key of ["a", "b", "c", "d"]) {
+      assert.match(row[`choice_${key}`], new RegExp(`^[a-z]+${hue}$`), row.question_id);
+      assert.equal(row[`choice_${key}_pccs`], row[`choice_${key}`], row.question_id);
+      assert.match(row[`choice_${key}_color_hex`], /^#[\da-f]{6}$/i, row.question_id);
+      swatches.add(row[`choice_${key}_color_hex`]);
+    }
+    assert.equal(swatches.size, 4, row.question_id);
+  }
 });

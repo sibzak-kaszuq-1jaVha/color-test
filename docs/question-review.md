@@ -72,3 +72,22 @@
 - [表面技術協会論文：アルミホーローについて](https://www.jstage.jst.go.jp/article/sfj1954/12/2/12_2_23/_pdf)：ネープルスイエローとアンチモン酸鉛。
 
 由来のほか、名前の意味・表記を問う問題では、その条件を問題文に明記します。解説にしかない限定条件で不正解にはしません。
+
+## 2026-11-09の更新
+
+既存の問題IDと正解を引き継ぎ、苦手分野25問と色票選択12問を追加しました。問題文は正解の漢字、読み仮名、カタカナ表記と、学習対象に応じた別名を照合しました。たとえば、るり色の設問では「瑠璃」を外し、代赭の設問は漢字表記の代わりに原料と代表色を手がかりにしました。
+
+| 分野 | 新規 | 比較するポイント |
+| --- | ---: | --- |
+| 青・紫系の花 | 8問 | 開花時期、生育場所、花びらの模様、花穂や葉の形 |
+| 顔料の原料 | 11問 | 鉱物と人工顔料、元素・化学式、土の焼成前後 |
+| 赤系の由来 | 6問 | 原料の虫、顔料の名前、染色で出る色、植物染料の部位 |
+| トーン名から色票を選ぶ | 12問 | PCCSの有彩色12トーン。同じ色相の4色から明度・彩度の違いを見分ける |
+
+トーン問題の赤・青の色票はPCCSのトーン図を参考にした画面用のsRGB近似です。2026年の試験形式では印刷された色から選びます。協会のサンプルには、トーン記号を選んだあと、近い色票をチャートから選ぶ設問が掲載されています。
+
+- 花の見分け方と開花時期の確認資料 [国立科学博物館附属自然教育園](https://ins.kahaku.go.jp/news-migoro/nid00005204.html)・[大阪市の公園情報](https://parksgreenery.city.osaka.lg.jp/article/how-to-distinguish-sweet-flags/)・[京都府立植物園](https://www.pref.kyoto.jp/plant/1199417249745.html)・[ミズーリ植物園](https://www.missouribotanicalgarden.org/gardens-gardening/your-garden/help-for-the-home-gardener/advice-tips-resources/visual-guides/fragrant-plants)
+- 慣用色名と代表値の確認資料 [JIS Z 8102 物体色の色名](https://kikakurui.com/z8/Z8102-2001-01.html)
+- 原料・色素の確認資料 [Harvard Museum Conservation Pigments Data Table](https://datalabs.cfa.harvard.edu/large_files/Speclab/MuseumConservationPigmentsDataTable.pdf)・[コチニールの媒染条件を扱った論文](https://www.degruyterbrill.com/document/doi/10.1515/cti-2022-0018/html)
+- スカーレットの語源 [Oxford Advanced Learner’s Dictionary](https://www.oxfordlearnersdictionaries.com/definition/english/scarlet_2)
+- 色票選択の確認資料 [色彩検定協会の変更点とサンプル](https://www.aft.or.jp/informations/detail/496)・[日本色彩研究所のPCCSトーン図](https://www.jcri.jp/achievement_1)

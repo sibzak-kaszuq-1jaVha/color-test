@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.svg", "icon-180.png", "icon-192.png", "icon-512.png"],
       manifest: {
-        name: "色彩検定1級 慣用色名",
+        name: "色彩検定1級 慣用色名・トーン",
         short_name: "色彩検定",
-        description: "色彩検定1級2次の慣用色名対策用学習アプリ",
+        description: "色彩検定1級2次の慣用色名とPCCSの色票選択を練習するアプリ",
         lang: "ja",
         theme_color: "#f7f3ed",
         background_color: "#f7f3ed",

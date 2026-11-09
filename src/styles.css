@@ -323,6 +323,19 @@ button:disabled {
   border-radius: 6px;
 }
 
+.swatch-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+}
+
+.swatch-choice .color-swatch {
+  width: auto;
+  height: 40px;
+  flex: 1;
+}
+
 .color-preview-text {
   min-width: 0;
 }

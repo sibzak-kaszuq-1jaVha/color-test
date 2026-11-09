@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import Layout from "./components/Layout";
 import type { AnswerLog, AppView, CheckState, Question, ReviewState } from "./types";
 import { loadQuestions } from "./utils/csv";
+import { TONE_MODE, WEAK_TOPIC_TAG } from "./utils/quiz";
 import { getAnswerLogs, getCheckStates, getReviewStates, saveCheckStates } from "./utils/storage";
 import HomePage from "./pages/HomePage";
 import QuizPage from "./pages/QuizPage";
@@ -11,6 +12,7 @@ import SettingsPage from "./pages/SettingsPage";
 
 export default function App() {
   const [view, setView] = useState<AppView>("home");
+  const [practice, setPractice] = useState<"all" | "weak" | "tone">("all");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [logs, setLogs] = useState<AnswerLog[]>(() => getAnswerLogs());
   const [reviewStates, setReviewStates] = useState<ReviewState[]>(() => getReviewStates());
@@ -51,6 +53,16 @@ export default function App() {
     setCheckStates(nextCheckStates);
   };
 
+  const navigate = (nextView: AppView) => {
+    setPractice("all");
+    setView(nextView);
+  };
+
+  const startPractice = (focus: "weak" | "tone") => {
+    setPractice(focus);
+    setView("quiz");
+  };
+
   const renderPage = () => {
     if (loading) {
       return <p className="empty-message">CSVを読み込んでいます。</p>;
@@ -70,10 +82,14 @@ export default function App() {
 
     switch (view) {
       case "quiz":
+        const practiceQuestions = practice === "all" ? questions : questions.filter((question) =>
+          practice === "weak" ? question.tags.includes(WEAK_TOPIC_TAG) : question.mode === TONE_MODE
+        );
         return (
           <QuizPage
+            key={practice}
             logs={logs}
-            questions={questions}
+            questions={practiceQuestions}
             reviewStates={reviewStates}
             checkStates={checkStates}
             onDataChanged={handleDataChanged}
@@ -117,14 +133,15 @@ export default function App() {
             questions={questions}
             reviewStates={reviewStates}
             checkStates={checkStates}
-            onNavigate={setView}
+            onNavigate={navigate}
+            onStartPractice={startPractice}
           />
         );
     }
   };
 
   return (
-    <Layout currentView={view} onNavigate={setView}>
+    <Layout currentView={view} onNavigate={navigate}>
       {renderPage()}
     </Layout>
   );

@@ -1,5 +1,6 @@
 type ChoiceButtonProps = {
   choice: string;
+  swatch?: { label: string; hex: string };
   disabled: boolean;
   isCorrect: boolean;
   isSelected: boolean;
@@ -8,12 +9,16 @@ type ChoiceButtonProps = {
 
 export default function ChoiceButton({
   choice,
+  swatch,
   disabled,
   isCorrect,
   isSelected,
   onSelect
 }: ChoiceButtonProps) {
   const classNames = ["choice-button"];
+  if (swatch) {
+    classNames.push("swatch-choice");
+  }
   if (disabled && isCorrect) {
     classNames.push("correct");
   }
@@ -28,7 +33,12 @@ export default function ChoiceButton({
       onClick={() => onSelect(choice)}
       type="button"
     >
-      {choice}
+      {swatch ? (
+        <>
+          <span>{swatch.label}</span>
+          <span aria-hidden="true" className="color-swatch" style={{ backgroundColor: swatch.hex }} />
+        </>
+      ) : choice}
     </button>
   );
 }
