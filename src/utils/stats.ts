@@ -1,5 +1,6 @@
 import type { AnswerLog, Question, ReviewState } from "../types";
 import { isDueTodayOrPast } from "./review";
+import { getUnansweredQuestions } from "./quiz";
 
 export type RateStats = {
   total: number;
@@ -76,10 +77,8 @@ export const getDifficultyStats = (
     .sort((a, b) => a.name.localeCompare(b.name, "ja"));
 };
 
-export const getUnansweredCount = (questions: Question[], logs: AnswerLog[]) => {
-  const answeredIds = new Set(logs.map((log) => log.question_id));
-  return questions.filter((question) => !answeredIds.has(question.question_id)).length;
-};
+export const getUnansweredCount = (questions: Question[], logs: AnswerLog[]) =>
+  getUnansweredQuestions(questions, logs).length;
 
 export const getDueReviewCount = (states: ReviewState[], checkedQuestionIds: string[] = []) => {
   const reviewIds = new Set(

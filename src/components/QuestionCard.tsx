@@ -4,8 +4,9 @@ import ChoiceButton from "./ChoiceButton";
 
 type QuestionCardProps = {
   question: Question;
-  questionNumber: number;
+  answeredCount: number;
   totalCount: number;
+  progressLabel?: string;
   isChecked: boolean;
   selectedAnswer?: string;
   onToggleCheck: (questionId: string) => void;
@@ -14,8 +15,9 @@ type QuestionCardProps = {
 
 export default function QuestionCard({
   question,
-  questionNumber,
+  answeredCount,
   totalCount,
+  progressLabel,
   isChecked,
   selectedAnswer,
   onToggleCheck,
@@ -27,7 +29,7 @@ export default function QuestionCard({
     <section className="question-card">
       <div className="question-meta">
         <span>
-          {questionNumber} / {totalCount}
+          {progressLabel && `${progressLabel} `}{answeredCount} / {totalCount}
         </span>
         <span>難易度 {question.difficulty}</span>
       </div>

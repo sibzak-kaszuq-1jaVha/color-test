@@ -114,7 +114,7 @@ export default function ReviewPage({
     <div className="page-stack">
       <QuestionCard
         question={current}
-        questionNumber={index + 1}
+        answeredCount={index + Number(Boolean(selectedAnswer))}
         isChecked={checkedQuestionIds.has(current.question_id)}
         selectedAnswer={selectedAnswer}
         totalCount={reviewQuestions.length}

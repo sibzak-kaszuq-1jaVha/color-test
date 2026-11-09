@@ -21,10 +21,12 @@ export function shuffleQuestionChoices(
   };
 }
 
-// 開始時に順序を確定し、回答履歴の更新で出題中の問題を動かさない。
-export function createQuizSession(questions: Question[], logs: AnswerLog[]): Question[] {
+export function getUnansweredQuestions(questions: Question[], logs: AnswerLog[]): Question[] {
   const answeredIds = new Set(logs.map((log) => log.question_id));
-  return [...questions]
-    .sort((a, b) => Number(answeredIds.has(a.question_id)) - Number(answeredIds.has(b.question_id)))
-    .map((question) => shuffleQuestionChoices(question));
+  return questions.filter((question) => !answeredIds.has(question.question_id));
+}
+
+// 開始時の未回答問題を固定する。
+export function createQuizSession(questions: Question[], logs: AnswerLog[]): Question[] {
+  return getUnansweredQuestions(questions, logs).map((question) => shuffleQuestionChoices(question));
 }

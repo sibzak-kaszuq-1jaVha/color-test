@@ -24,6 +24,7 @@ export default function QuizPage({
   onCheckStatesChanged
 }: QuizPageProps) {
   const [sessionQuestions, setSessionQuestions] = useState(() => createQuizSession(questions, logs));
+  const [isRepeating, setIsRepeating] = useState(false);
   const [index, setIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>();
   const [startedAt, setStartedAt] = useState(() => Date.now());
@@ -88,14 +89,15 @@ export default function QuizPage({
   if (!current) {
     return (
       <div className="empty-panel">
-        <h2>今回の学習が完了しました</h2>
-        <p>{sessionQuestions.length}問に回答しました。</p>
+        <h2>{sessionQuestions.length > 0 ? "今回の学習が完了しました" : "未回答の問題はありません"}</h2>
+        {sessionQuestions.length > 0 && <p>{sessionQuestions.length}問に回答しました。</p>}
         <button className="primary-button" type="button" onClick={() => {
-          setSessionQuestions(createQuizSession(questions, logs));
+          setSessionQuestions(createQuizSession(questions, []));
+          setIsRepeating(true);
           setIndex(0);
           setStartedAt(Date.now());
         }}>
-          もう一度学習する
+          全問をもう一度解く
         </button>
       </div>
     );
@@ -105,7 +107,8 @@ export default function QuizPage({
     <div className="page-stack">
       <QuestionCard
         question={current}
-        questionNumber={index + 1}
+        answeredCount={index + Number(Boolean(selectedAnswer))}
+        progressLabel={isRepeating ? "再学習" : undefined}
         isChecked={checkedQuestionIds.has(current.question_id)}
         selectedAnswer={selectedAnswer}
         totalCount={sessionQuestions.length}

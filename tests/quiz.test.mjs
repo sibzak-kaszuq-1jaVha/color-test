@@ -41,20 +41,21 @@ test("24通りの並びで正解・色見本の対応を保ち、正解が各位
   assert.deepEqual(question, original);
 });
 
-test("未回答を優先し、開始後の履歴変更で出題順を動かさない", () => {
+test("開始時の未回答だけを出題し、途中の回答で対象数と順番を変えない", () => {
   const questions = ["answered", "new-1", "new-2"].map((question_id) => ({ ...question, question_id }));
-  const logs = [{ question_id: "answered" }];
+  const logs = [{ question_id: "answered" }, { question_id: "answered" }, { question_id: "old-id" }];
   const session = createQuizSession(questions, logs);
   logs.push({ question_id: "new-1" });
-  assert.deepEqual(session.map((item) => item.question_id), ["new-1", "new-2", "answered"]);
+  assert.deepEqual(session.map((item) => item.question_id), ["new-1", "new-2"]);
   assert.deepEqual(questions.map((item) => item.question_id), ["answered", "new-1", "new-2"]);
   assert.deepEqual(createQuizSession(questions, logs).map((item) => item.question_id),
-    ["new-2", "answered", "new-1"]);
+    ["new-2"]);
 });
 
-test("全問回答済みでも一巡分の全問題が含まれ、空の問題集も扱える", () => {
+test("全問回答済みの未回答学習は空になり、再学習では全問を出題できる", () => {
   assert.deepEqual(createQuizSession([], []), []);
-  const session = createQuizSession([question], [{ question_id: question.question_id }]);
+  assert.deepEqual(createQuizSession([question], [{ question_id: question.question_id }]), []);
+  const session = createQuizSession([question], []);
   assert.equal(session.length, 1);
   assert.equal(session[0].question_id, question.question_id);
 });
